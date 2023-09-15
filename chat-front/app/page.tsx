@@ -42,7 +42,9 @@ export default function Home() {
         {/* Formulaire Username */}
         <div>
           <input
-            className="input input-info"
+            className={`input input-info ${
+              username.length > 3 ? "input-success" : "input-error"
+            }`}
             type="text"
             placeholder="Enter your username"
             value={username}
