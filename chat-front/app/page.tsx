@@ -9,12 +9,24 @@ export default function Home() {
   const [text, setText] = useState("");
   const [messages, setMessages] = useState<any[]>([]);
   const [username, setUsername] = useState("");
+  const [exist, setExist] = useState(true);
 
   useEffect(() => {
     socket.on("connect", () => {
       console.log("connected");
     });
+    socket.on("user-exist", (data) => {
+      setExist(data.exists);
+    });
 
+    return () => {
+      socket.disconnect();
+    };
+    useEffect(() => {
+      socket.emit('user-check', username);
+    }, [username])
+  
+  
     socket.on("connection-log", (data) => {
       console.log(data, typeof data);
     });
@@ -36,11 +48,17 @@ export default function Home() {
     setText("");
   };
 
+  const handleUserJoin = (e: any) => {
+    e.preventDefault();
+
+    socket.emit("user-add", username);
+  };
+
   return (
     <main className="flex min-h-screen flex-col justify-between p-12">
-      <div className="grow ">
+      
         {/* Formulaire Username */}
-        <div>
+        <form onSubmit={handleUserJoin}>
           <input
             className={`input input-info ${
               username.length > 3 ? "input-success" : "input-error"
@@ -51,7 +69,8 @@ export default function Home() {
             onChange={(e) => setUsername(e.target.value)}
           />
           <button className="btn btn-info" type="submit">Set Username</button>
-        </div>
+        </form>
+        <div className="grow ">
         {/* Formulaire chat */}
         {messages.map((m) => {
           if (m.name === username) {
