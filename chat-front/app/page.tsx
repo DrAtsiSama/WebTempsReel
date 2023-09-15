@@ -8,6 +8,7 @@ const socket = io("http://localhost:3000");
 export default function Home() {
   const [text, setText] = useState("");
   const [messages, setMessages] = useState<any[]>([]);
+  const [username, setUsername] = useState("");
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -28,7 +29,7 @@ export default function Home() {
 
     socket.emit("messages", {
       content: text,
-      name: "me",
+      name: username,
       timeSent: new Date().toUTCString(),
     });
 
@@ -36,22 +37,59 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col">
-      {messages.map((m, i) => (
-        <div key={i}>
-          <p>{m.name}</p>
-          <p>{m.content}</p>
-          <time>{m.timeSent}</time>
+    <main className="flex min-h-screen flex-col justify-between p-12">
+      <div className="grow ">
+        {/* Formulaire Username */}
+        <div>
+          <input
+            className="input input-info"
+            type="text"
+            placeholder="Enter your username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <button className="btn btn-info" type="submit">Set Username</button>
         </div>
-      ))}
-      <form onSubmit={handleSubmit}>
+        {/* Formulaire chat */}
+        {messages.map((m) => {
+          if (m.name === username) {
+            return (
+              <div className="chat chat-end " key={m.timeSent}>
+                <div className="chat-header">{m.name}</div>
+                <div className="chat-bubble chat-bubble-secondary">
+                  {m.content}
+                </div>
+                <div className="chat-footer opacity-50">
+                  <time className="text-xs opacity-50">{m.timeSent}</time>
+                </div>
+              </div>
+            );
+          } else {
+            return (
+              <div className="chat chat-start " key={m.timeSent}>
+                <div className="chat-header">{m.name}</div>
+                <div className="chat-bubble">{m.content}</div>
+                <div className="chat-footer opacity-50">
+                  <time className="text-xs opacity-50">{m.timeSent}</time>
+                </div>
+              </div>
+            );
+          }
+        })}
+      </div>
+      <form
+        onSubmit={handleSubmit}
+        className="w-full flex gap-2 justify-center"
+      >
         <input
-          className="dark:text-white"
+          className="input"
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
-        <button type="submit">Send</button>
+        <button type="submit" className="btn">
+          Send
+        </button>
       </form>
     </main>
   );
